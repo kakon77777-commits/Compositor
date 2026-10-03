@@ -1,5 +1,10 @@
 # Compositor for Windows
 
+**This fork's baseline work:** the port below is retained from chenguisen's `c51be1e` snapshot, with its
+history and original copyright. See [BASELINE.md](BASELINE.md) for reproducible local checks, fork changes,
+evidence limits and the deferred file adapter. It is an independent community build, without official
+endorsement or a claim of parity with the latest macOS release.
+
 A Windows build of [Compositor](https://github.com/robbietilton/Compositor), the macOS image editor. It is a
 port, not a wrapper: the document model, the tiled compositing engine, every tool, every filter and the whole
 interface are written again for Windows, and the two builds read and write the **same `.comp` project format**.

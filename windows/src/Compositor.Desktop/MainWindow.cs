@@ -24,7 +24,7 @@ namespace Compositor.Desktop;
 /// The editor window: the canvas, the layers panel and a status line. Projects are opened as folders,
 /// because on Windows a `.comp` is an ordinary directory rather than the file-like package the Mac sees.
 /// </summary>
-public sealed class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
     /// <summary>The panels, the strip and the bar under the canvas: the Mac's editor background.</summary>
     private static readonly IBrush Panel = Skin.ChromeBrush;
@@ -1871,6 +1871,13 @@ public sealed class MainWindow : Window
         // A guide pulled off a ruler: a press on the strip, dragged onto the canvas. The ruler across the top
         // makes a horizontal guide, positioned by the Y it is let go at.
         SetTool(Tool.Pan);
+        // A clean profile starts with guides hidden. This check needs them shown and movable, without
+        // persisting different preferences just to drive a guide.
+        _guidesVisible = true;
+        _guidesLocked = false;
+        _showGuides.IsChecked = true;
+        _lockGuides.IsChecked = false;
+        PushViewSwitches();
         if (!_rulersVisible)
         {
             // Turned on directly rather than through the View menu, so that a check does not write the view's

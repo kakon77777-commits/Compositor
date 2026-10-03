@@ -285,8 +285,7 @@ public sealed class ShortcutDefaults
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
     /// <summary>Where the table is kept for whoever is using the app.</summary>
-    public static string DefaultPath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Compositor", "shortcuts.json");
+    public static string DefaultPath => PreferencePaths.For("shortcuts.json");
 
     /// <summary>Only the rows that are not on their original key.</summary>
     public Dictionary<string, ShortcutChord> Overrides { get; set; } = [];

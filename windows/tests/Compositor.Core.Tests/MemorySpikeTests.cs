@@ -5,6 +5,7 @@ using Compositor.Core.IO;
 using Compositor.Core.Model;
 using Compositor.Core.Rendering;
 using SkiaSharp;
+using Xunit.Abstractions;
 
 namespace Compositor.Core.Tests;
 
@@ -13,7 +14,7 @@ namespace Compositor.Core.Tests;
 /// regression in cost shows up as a failure; the sizes that are known not to fit are behind
 /// COMPOSITOR_SPIKE=1 so no regular run tries to allocate gigabytes.
 /// </summary>
-public class MemorySpikeTests
+public class MemorySpikeTests(ITestOutputHelper output)
 {
     private static ImageLayer Solid(SKColor colour, double x, double y, int width, int height)
     {
@@ -99,11 +100,11 @@ public class MemorySpikeTests
             var header = File.ReadAllBytes(path).AsSpan(0, 33);
             var width = (header[16] << 24) | (header[17] << 16) | (header[18] << 8) | header[19];
             var height = (header[20] << 24) | (header[21] << 16) | (header[22] << 8) | header[23];
-            File.WriteAllText(@"C:\chenguisen\code_repos\Compositor\windows\memory.txt",
+            output.WriteLine(
                 $"tiled export of 30000x8000: {new FileInfo(path).Length / 1024} KiB on disk, " +
                 $"header {width}x{height}, elapsed {clock.ElapsedMilliseconds} ms, " +
                 $"working set grew {(process.WorkingSet64 - before) / (1024 * 1024)} MiB " +
-                $"(a single buffer would be 960 MiB)\n");
+                $"(a single buffer would be 960 MiB)");
         }
         finally
         {

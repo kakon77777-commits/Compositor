@@ -221,6 +221,56 @@ public class HistoryTests
         Assert.Equal(10, restored!.Value.Document!.Layers[0].Transform.X);
     }
 
+    [Theory]
+    [InlineData("enabled")]
+    [InlineData("linked")]
+    [InlineData("placement")]
+    public void MaskMetadataSurvivesSnapshotsUndoAndRedo(string change)
+    {
+        using var document = new CanvasDocument(Guid.NewGuid(), 40, 40);
+        var layer = Layer(10, 20, 4, 6);
+        var gray = new SKBitmap(Bitmaps.MaskInfo(2, 2));
+        gray.Erase(SKColors.White);
+        layer.Mask = Model.LayerMask.AssetFrom(gray);
+        layer.Mask.Placement = new Model.LayerTransform(2, 3, 4, 6);
+        document.Layers.Add(layer);
+        var pixels = layer.Mask.Asset;
+        var original = (layer.Mask.IsEnabled, layer.Mask.IsLinked, layer.Mask.Placement);
+        using var before = document.Clone();
+        var history = new DocumentHistory();
+
+        history.Begin("Mask metadata", document, layer.ID);
+        switch (change)
+        {
+            case "enabled": Assert.True(LayerMaskEdits.SetEnabled(document, layer.ID, false)); break;
+            case "linked": Assert.True(LayerMaskEdits.SetLinked(document, layer.ID, false)); break;
+            case "placement": LayerEdits.FlipCanvas(document, horizontally: true); break;
+        }
+        history.End(document, layer.ID);
+        var edited = (layer.Mask.IsEnabled, layer.Mask.IsLinked, layer.Mask.Placement);
+
+        Assert.Equal(original, (before.Layers[0].Mask!.IsEnabled, before.Layers[0].Mask!.IsLinked,
+            before.Layers[0].Mask!.Placement));
+        Assert.Equal(1, history.UndoCount);
+        Assert.True(history.IsModified);
+        var undo = history.Undo();
+        Assert.NotNull(undo);
+        document.Adopt(undo.Value.Document!);
+        var restored = document.Layers[0].Mask!;
+        Assert.Equal(original, (restored.IsEnabled, restored.IsLinked, restored.Placement));
+        Assert.False(history.IsModified);
+        Assert.Same(pixels, restored.Asset);
+
+        var redo = history.Redo();
+        Assert.NotNull(redo);
+        document.Adopt(redo.Value.Document!);
+        restored = document.Layers[0].Mask!;
+        Assert.Equal(edited, (restored.IsEnabled, restored.IsLinked, restored.Placement));
+        Assert.True(history.IsModified);
+        Assert.Same(pixels, restored.Asset);
+        Assert.Equal(0, history.RetainedBytes(document));
+    }
+
     [Fact]
     public void ASnapshotDoesNotOwnThePixelsItShares()
     {

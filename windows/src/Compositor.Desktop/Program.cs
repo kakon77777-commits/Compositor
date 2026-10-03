@@ -16,11 +16,12 @@ using SkiaSharp;
 
 namespace Compositor.Desktop;
 
-internal static class Program
+internal static partial class Program
 {
     [STAThread]
     public static int Main(string[] args)
     {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
         // Draws the canvas control straight to a PNG, so the interface can be checked without a window.
         // `--grid` turns the layout grid on for the render, which is how that drawing is checked.
         if (args is ["--render", var project, var output]) return Render(project, output, showGrid: false);
@@ -83,6 +84,8 @@ internal static class Program
         // history. It runs on Avalonia's headless platform, which is what makes hit-testing and pointer capture
         // real without a display.
         if (args is ["--clicks", var clicksOutput]) return Clicks(clicksOutput);
+        // The basic document journey through the window's own edit, save and reload paths.
+        if (args is ["--baseline", var baselineOutput]) return Baseline(baselineOutput);
         // `--updates` reads the app's real update feed and says what it makes of it, which is the whole check
         // short of the dialog: off the network it prints that the feed could not be reached instead.
         if (args is ["--updates"]) return Updates();
